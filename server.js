@@ -50,7 +50,7 @@ const start = ()=>{
  			}
  			// ------------------------已经获取到所有歌曲列表页面------------------------------
 
- 			async.mapLimit(song_page_list.splice(0,5),3,(url, back)=>{
+ 			async.mapLimit(song_page_list,3,(url, back)=>{
 
  				//现在开始按顺序请求歌曲列表页  获取所有 歌曲详情页的链接
  				console.log('现在请求的是歌曲列表：'+url)
@@ -105,9 +105,9 @@ const start = ()=>{
  					return item['mp3_href']
  				})
 
- 				// const task1 = (done)=>{
+ 				const task1 = (done)=>{
  					let count = 0
- 					async.mapLimit(detail_page_urls.splice(0,2),3,(url,callback)=>{
+ 					async.mapLimit(detail_page_urls,3,(url,callback)=>{
  						fetchUrl({
  							url:url,
  							referer:url,
@@ -119,14 +119,16 @@ const start = ()=>{
 
  							const $ = cheerio.load(pageBody.text,{decodeEntities: false})
  							const mp3_gc = $('.t_mp3_gc').html()
-
- 							console.log(mp3_gc)
 	
+ 							console.log(mp3_gc)
+
  							for(var i=0; i<_result.length; i++){
  								if(_result[i]['href'] == url){
  									_result[i]['mp3_gc'] = mp3_gc
  								}
  							}
+
+
 
  							setTimeout(()=>{
  								count--
@@ -141,55 +143,55 @@ const start = ()=>{
  							console.log(err)
  						}
  						console.log('添加歌词完事了')
- 						// console.log(result)
- 						// done(null,result)
+ 						done(null,result)
  					})
- 				// }
- 			// 	const task2 = (done)=>{
- 			// 		let count = 0
- 			// 		async.mapLimit(song_hrefs,3,(url,callback)=>{
- 			// 			fetchUrl({
- 			// 				url:url,
- 			// 				referer:url,
- 			// 				callback:(pageBody,url)=>{
+ 				}
+ 				const task2 = (done)=>{
+ 					let count = 0
+ 					async.mapLimit(song_hrefs,3,(url,callback)=>{
+ 						fetchUrl({
+ 							url:url,
+ 							referer:url,
+ 							callback:(pageBody,url)=>{
 
- 			// 				count++
- 			// 				console.log('现在并发是：'+ count)
- 			// 				const delay = parseInt((Math.random() * 10000000) % 2000, 10);
- 			// 				console.log('正在获取 '+url+ '来得到MP3真实地址')
+ 							count++
+ 							console.log('现在并发是：'+ count)
+ 							const delay = parseInt((Math.random() * 10000000) % 2000, 10);
+ 							console.log('正在获取 '+url+ '来得到MP3真实地址')
 
- 			// 				const rel_href = getRealMp3Addr(pageBody)
- 			// 				for(var i=0; i<_result.length; i++){
- 			// 					if(_result[i]['mp3_href'] == url){
- 			// 						_result[i]['mp3_rel_href'] = rel_href
- 			// 					}
- 			// 				}
+ 							const rel_href = getRealMp3Addr(pageBody)
+ 							console.log(rel_href)	
+ 							for(var i=0; i<_result.length; i++){
+ 								if(_result[i]['mp3_href'] == url){
+ 									_result[i]['mp3_rel_href'] = rel_href
+ 								}
+ 							}
 
- 			// 				setTimeout(()=>{
- 			// 					count--
- 			// 					callback(null,_result)
- 			// 				},delay)
+ 							setTimeout(()=>{
+ 								count--
+ 								callback(null,_result)
+ 							},delay)
 
- 			// 			}
- 			// 			})
- 			// 		},(err, result)=>{
- 			// 			if(err){
- 			// 				console.log(err)
- 			// 			}
- 			// 			console.log('添加歌词完事了')
- 			// 			done(null,result)
- 			// 		})
- 			// 	}
+ 						}
+ 						})
+ 					},(err, result)=>{
+ 						if(err){
+ 							console.log(err)
+ 						}
+ 						console.log('添加歌词完事了')
+ 						done(null,result)
+ 					})
+ 				}
 
-				// async.parallel({
-				//     one:task1,two:task2
-				// }, function (err, results) {
-				// 		console.log(_result)
-				//     console.log('都完事了！！！')
-				//     const endTime = +new Date()
-				//     const useTime = (endTime-startTime)/1000 + '秒'
-				//     console.log(useTime)
-				// }); 				
+				async.parallel({
+				    one:task1,two:task2
+				}, function (err, results) {
+						console.log(_result)
+				    console.log('都完事了！！！')
+				    const endTime = +new Date()
+				    const useTime = (endTime-startTime)/1000 + '秒'
+				    console.log(useTime)
+				}); 				
 
 
  			})
